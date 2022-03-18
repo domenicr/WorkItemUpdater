@@ -1,9 +1,9 @@
 ﻿{
-    "id": "7164116a-ed17-48be-9c53-b440b2b1dd2e",
+    "id": "a4a993c8-fbea-4e52-9c48-144326418234",
     "name": "WorkItemUpdater",
-    "friendlyName": "WorkItem Updater",
+    "friendlyName": "WorkItem Updater X",
     "description": "This task adds functionality to update WorkItems during a Build or Release.",
-    "author": "Blue Basher",
+    "author": "Domenico Rico",
     "helpMarkDown": "",
     "category": "Utility",
     "visibility": [
@@ -17,7 +17,7 @@
     },
     "demands": [],
     "minimumAgentVersion": "1.91.0",
-    "instanceNameFormat": "WorkItem Updater",
+    "instanceNameFormat": "WorkItem Updater X Task",
     "groups": [],
     "inputs": [
         {
