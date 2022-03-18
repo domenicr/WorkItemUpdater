@@ -12,8 +12,8 @@
     ],
     "version": {
         "Major": "2",
-        "Minor": "5",
-        "Patch": "800"
+        "Minor": "6",
+        "Patch": "806"
     },
     "demands": [],
     "minimumAgentVersion": "1.91.0",
@@ -71,17 +71,6 @@
             "helpMarkDown": "While deploying a release to an environment, update all workitems since the previously completed deployment."
         },
         {
-            "name": "workItemState",
-            "type": "pickList",
-            "label": "WorkItem State",
-            "defaultValue": "",
-            "required": false,
-            "helpMarkDown": "The state to update the workitems to",
-            "properties": {
-                "DisableManageLink": "True"
-            }
-        },
-        {
             "name": "workItemCurrentState",
             "type": "pickList",
             "label": "Filter by WorkItem Current State",
@@ -92,6 +81,28 @@
                 "DisableManageLink": "True",
                 "EditableOptions": "False",
                 "MultiSelectFlatList": "True"
+            }
+        },
+        {
+            "name": "workItemCurrentKanbanLane",
+            "type": "string",
+            "label": "Filter by WorkItem Current Kanban Lane",
+            "defaultValue": "",
+            "required": false,
+            "helpMarkDown": "If defined, only update workitems that currently are in this Kanban Lane. Leave empty to update from any Kanban lane. Separate different valid states with ','",
+            "properties": {
+                "DisableManageLink": "True"
+            }
+        },
+        {
+            "name": "workItemState",
+            "type": "pickList",
+            "label": "WorkItem State",
+            "defaultValue": "",
+            "required": false,
+            "helpMarkDown": "The state to update the workitems to",
+            "properties": {
+                "DisableManageLink": "True"
             }
         },
         {

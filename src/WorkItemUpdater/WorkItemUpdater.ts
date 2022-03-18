@@ -117,6 +117,7 @@ function getSettings(): Settings {
     settings.updateFields = tl.getInput('updateFields');
     settings.bypassRules = tl.getBoolInput('bypassRules');
     settings.failTaskIfNoWorkItemsAvailable = tl.getBoolInput('failTaskIfNoWorkItemsAvailable');
+    settings.workItemKanbanLaneFilter = tl.getInput('workItemCurrentKanbanLane');
 
     settings.addTags = tl.getInput('addTags');
     if (settings.addTags) {
@@ -151,6 +152,7 @@ function getSettings(): Settings {
     tl.debug('workItemType ' + settings.workItemType);
     tl.debug('WorkItemState ' + settings.workItemState);
     tl.debug('workItemCurrentState ' + settings.workItemCurrentState);
+    tl.debug('workItemCurrentKanban Lane ' + settings.workItemKanbanLaneFilter);
     tl.debug('updateWorkItemKanbanLane ' + settings.workItemKanbanLane);
     tl.debug('WorkItemKanbanState ' + settings.workItemKanbanState);
     tl.debug('WorkItemDone ' + settings.workItemDone);
@@ -227,7 +229,12 @@ async function updateWorkItem(workItemTrackingClient: IWorkItemTrackingApi, work
     tl.debug('Updating  WorkItem: ' + workItem.id);
     if (settings.workItemType.split(',').indexOf(workItem.fields['System.WorkItemType']) >= 0) {
         if (settings.workItemCurrentState && settings.workItemCurrentState !== '' && settings.workItemCurrentState.split(',').indexOf(workItem.fields['System.State']) === -1) {
-            console.log('Skipped WorkItem: ' + workItem.id + ' State: "' + workItem.fields['System.State'] + '" => Only updating if state in "' + settings.workItemCurrentState) + '"';
+            console.log('Skipped WorkItem: ' + workItem.id + ' State: "' + workItem.fields['System.State'] + '" => Only updating if state in "' + settings.workItemCurrentState + '"');
+            return false;
+        }
+        
+        if (settings.workItemKanbanLaneFilter && settings.workItemKanbanLaneFilter !== '' && settings.workItemKanbanLaneFilter.split(',').indexOf(workItem.fields['System.BoardLane']) === -1) {
+            console.log('Skipped WorkItem: ' + workItem.id + ' Boardlane: "' + workItem.fields['System.BoardLane'] + '" => Only updating if board lane in "' + settings.workItemKanbanLaneFilter  + '"');
             return false;
         }
 
@@ -235,28 +242,30 @@ async function updateWorkItem(workItemTrackingClient: IWorkItemTrackingApi, work
 
         const document: any[] = [];
 
-        const kanbanLane = getWorkItemFields(workItem, (f: string) => f.endsWith('Kanban.Lane'));
-        tl.debug('Found KanbanLane: ' + kanbanLane);
-        const kanbanColumn = getWorkItemFields(workItem, (f: string) => f.endsWith('Kanban.Column'));
-        tl.debug('Found KanbanColumn: ' + kanbanColumn);
-        const kanbanColumnDone = getWorkItemFields(workItem, (f: string) => f.endsWith('Kanban.Column.Done'));
-        tl.debug('Found KanbanColumnDone: ' + kanbanColumnDone);
-
         if (settings.workItemState && settings.workItemState !== '') {
             addPatchOperation('/fields/System.State', settings.workItemState, document);
         }
 
+        //this is done because for some strange reason that the System.BoardLane is readonly but an instance field is used to manage it
+        //https://stackoverflow.com/questions/58862961/azure-devops-rest-apis-for-swimlane
+        const kanbanLane = getWorkItemFields(workItem, (f: string) => f.endsWith('Kanban.Lane'));
         if (settings.workItemKanbanLane && settings.workItemKanbanLane !== '' && kanbanLane.length > 0) {
             kanbanLane.forEach((lane, index) => {
                 addPatchOperation('/fields/' + lane, settings.workItemKanbanLane, document);
-            });
+            })
         }
-
+        
+        const kanbanColumn = getWorkItemFields(workItem, (f: string) => f.endsWith('Kanban.Column'));
+        tl.debug('Found KanbanColumn: ' + kanbanColumn);
+ 
         if (settings.workItemKanbanState && settings.workItemKanbanState !== '' && kanbanColumn.length > 0) {
             kanbanColumn.forEach((column, index) => {
                 addPatchOperation('/fields/' + column, settings.workItemKanbanState, document);
             });
         }
+
+        const kanbanColumnDone = getWorkItemFields(workItem, (f: string) => f.endsWith('Kanban.Column.Done'));
+        tl.debug('Found KanbanColumnDone: ' + kanbanColumnDone);
 
         if (settings.workItemDone && kanbanColumnDone.length > 0) {
             kanbanColumnDone.forEach((columnDone, index) => {
